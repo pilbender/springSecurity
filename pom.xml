@@ -1,137 +1,81 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.thescene</groupId>
+
+	<groupId>org.raescott</groupId>
 	<artifactId>springSecurity</artifactId>
 	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<properties>
-		<tomcat.version>6.0.29</tomcat.version>
-	</properties>
 
-	<name>springSecurity JEE5 Webapp</name>
+	<name>springSecurity Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 
-	<dependencies>
+	<properties>
+		<tomcat.version>7.0.47</tomcat.version>
+	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>4.3.2.RELEASE</version>
+		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
 		</dependency>
-
 		<dependency>
-			<groupId>javax.servlet.jsp</groupId>
-			<artifactId>jsp-api</artifactId>
-			<version>2.2</version>
-			<scope>provided</scope>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.6.3</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<version>2.6.3</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
+
 	<build>
+		<finalName>springSecurity</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
-				<artifactId>tomcat6-maven-plugin</artifactId>
-				<version>2.0</version>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
 				<configuration>
 					<port>8080</port>
 					<systemProperties>
-						<JAVA_OPTS>-Xmx1024m -XX:MaxPermSize=1024m</JAVA_OPTS>
+						<!-- These system properties take precedence over the ones set in the host environment -->
+						<JAVA_OPTS>-Xmx1024m</JAVA_OPTS>
 					</systemProperties>
-					<additionalClasspathDirs>
-						<additionalClasspathDir>${spring-security.properties.directory}</additionalClasspathDir>
-					</additionalClasspathDirs>
 					<httpsPort>8443</httpsPort>
 					<keystoreFile>${basedir}/src/test/resources/keystore.jks</keystoreFile>
 					<keystorePass>changeit</keystorePass>
+					<path>/${project.build.finalName}</path>
+					<additionalClasspathDirs>
+						<additionalClasspathDir>${basedir}/src/test/resources</additionalClasspathDir>
+					</additionalClasspathDirs>
+					<useTestClasspath>true</useTestClasspath>
 				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>catalina</artifactId>
-						<version>${tomcat.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>catalina-ha</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>tribes</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>el-api</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>jasper</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>jasper-el</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>jasper-jdt</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>jsp-api</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>servlet-api</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>coyote</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.tomcat</groupId>
-						<artifactId>dbcp</artifactId>
-						<version>${tomcat.version}</version>
-						<scope>runtime</scope>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
-		<finalName>springSecurity</finalName>
 	</build>
 </project>
