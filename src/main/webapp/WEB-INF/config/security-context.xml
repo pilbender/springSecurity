@@ -10,13 +10,13 @@
 	<sec:http auto-config="true" >
 		<sec:intercept-url pattern="/secured" access="hasRole('ROLE_BASIC')" />
 		<sec:intercept-url pattern="/oauth-secured" access="hasRole('ROLE_OAUTH')" />
+		<sec:logout logout-url="/logout" />
 	</sec:http>
 
 	<sec:authentication-manager alias="authenticationManager" >
 		<sec:authentication-provider>
 			<sec:user-service>
 				<sec:user name="scott" password="password" authorities="ROLE_BASIC" />
-				<sec:user name="scott-oauth" password="password" authorities="ROLE_OAUTH" />
 			</sec:user-service>
 		</sec:authentication-provider>
 	</sec:authentication-manager>
@@ -53,6 +53,7 @@
 
 	<bean id="tokenStore" class="org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore"/>
 
+	<!-- AuthorizationServerSecurityConfigurer -->
 	<bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
 		<property name="tokenStore" ref="tokenStore"/>
 		<property name="supportRefreshToken" value="true"/>
@@ -68,6 +69,7 @@
 	<oauth:resource-server id="resourceServerFilter" resource-id="springSecurity" token-services-ref="tokenServices"/>
 
 	<oauth:client-details-service id="clientDetails">
+		<!-- ClientDetailsServiceConfigurer -->
 		<oauth:client client-id="scott-oauth" secret="password" authorized-grant-types="password,refresh_token" scope="oauth-secured" authorities="OAUTH"/>
 	</oauth:client-details-service>
 </beans>
