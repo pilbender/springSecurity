@@ -7,16 +7,67 @@
 	   http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2.xsd
        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
-	<sec:http auto-config="true">
-		<sec:intercept-url pattern="/secured" access="isAuthenticated()" />
+	<sec:http auto-config="true" >
+		<sec:intercept-url pattern="/secured" access="hasRole('ROLE_BASIC')" />
+		<sec:intercept-url pattern="/oauth-secured" access="hasRole('ROLE_OAUTH')" />
 	</sec:http>
 
-	<sec:authentication-manager>
+	<sec:authentication-manager alias="authenticationManager" >
 		<sec:authentication-provider>
 			<sec:user-service>
-				<sec:user name="scott" password="password"  authorities="IS_AUTHENTICATED_FULLY" />
+				<sec:user name="scott" password="password" authorities="ROLE_BASIC" />
+				<sec:user name="scott-oauth" password="password" authorities="ROLE_OAUTH" />
 			</sec:user-service>
 		</sec:authentication-provider>
 	</sec:authentication-manager>
 
+	<!-- This should be protected by authenticated security -->
+	<bean id="oauthAuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+		<property name="realmName" value="oauth/authorize"/>
+	</bean>
+
+	<bean id="clientAuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+		<property name="realmName" value="oauth/token"/>
+		<property name="typeName" value="Basic"/>
+	</bean>
+
+	<bean id="oauthAccessDeniedHandler" class="org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler"/>
+
+	<bean id="clientCredentialsTokenEndpointFilter" class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">
+		<property name="authenticationManager" ref="authenticationManager"/>
+	</bean>
+
+	<bean id="oAuth2AuthenticationProcessingFilter" class="org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter" >
+		<property name="authenticationManager" ref="authenticationManager" />
+	</bean>
+
+	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased">
+		<constructor-arg>
+			<list>
+				<bean class="org.springframework.security.oauth2.provider.vote.ScopeVoter"/>
+				<bean class="org.springframework.security.access.vote.RoleVoter"/>
+				<bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="tokenStore" class="org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore"/>
+
+	<bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
+		<property name="tokenStore" ref="tokenStore"/>
+		<property name="supportRefreshToken" value="true"/>
+		<property name="accessTokenValiditySeconds" value="3600"/>
+		<property name="clientDetailsService" ref="clientDetails"/>
+	</bean>
+
+	<oauth:authorization-server client-details-service-ref="clientDetails" token-services-ref="tokenServices">
+		<oauth:refresh-token/>
+		<oauth:password/>
+	</oauth:authorization-server>
+
+	<oauth:resource-server id="resourceServerFilter" resource-id="springSecurity" token-services-ref="tokenServices"/>
+
+	<oauth:client-details-service id="clientDetails">
+		<oauth:client client-id="scott-oauth" secret="password" authorized-grant-types="password,refresh_token" scope="oauth-secured" authorities="OAUTH"/>
+	</oauth:client-details-service>
 </beans>
